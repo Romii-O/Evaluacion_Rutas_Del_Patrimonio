@@ -9,12 +9,22 @@ body {
     min-height: 100vh;
     margin: 0;
 
+    font-family: Arial, sans-serif;
+    color: rgb(0, 0, 0);
+
     h4 {
         text-align: left;
         color: rgb(0, 0, 0);
         font-size: 15px;
         margin-top: 10px;
         margin-bottom: 100px;
+    }
+
+    ul {
+        list-style-type: inside square;
+        display: inline-block;
+        padding: 0;
+        text-align: left;
     }
 
     .caja {
@@ -27,5 +37,12 @@ body {
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card img {
+        height: 150px;
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+        object-fit: cover;
     }
 }
