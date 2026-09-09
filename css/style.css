@@ -108,4 +108,37 @@ body {
         padding: 10px;
         text-align: center    ;
     }
+
+    .salar {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 10px auto;
+        max-width: 800px;
+        padding: 10px;
+        text-align: center    ;
+    }
+
+    .cepillas {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 10px auto;
+        max-width: 800px;
+        padding: 10px;
+        text-align: center    ;
+    }
+
+    .lapsada {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 10px auto;
+        max-width: 800px;
+        padding: 10px;
+        text-align: center    ;
+    }
 }
