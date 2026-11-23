@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registros</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <h1>Registros</h1>
+
+    <button onclick="agregar()">Agregar</button>
+    <span id="estado"></span>
+
+    <table id="tabla"></table>
+
+    <script>
+      const API_URL = "https://script.google.com/macros/s/AKfycbzCKLOq-TdW1zIm3YwGZujAqOgNTOZq9hrI3RpN6oprDM-luEEEE4bY6XYnzudQTWlq/exec";
+      const TOKEN = "sergio";
+
+      let encabezados = [];
+      let filas = [];
+
+      function cargar() {
+        document.getElementById("estado").textContent = "Cargando...";
+
+        fetch(API_URL + "?token=" + TOKEN)
+          .then((res) => res.json())
+          .then((datos) => {
+            encabezados = datos.headers;
+            filas = datos.rows;
+            dibujarTabla();
+            document.getElementById("estado").textContent = "";
+          })
+          .catch(() => {
+            document.getElementById("estado").textContent = "Error al cargar";
+          });
+      }
+
+      // 2. Dibujar la tabla
+      function dibujarTabla() {
+        let html = "<tr>";
+        for (let i = 0; i < encabezados.length; i++) {
+          html += "<th>" + encabezados[i] + "</th>";
+        }
+        html += "<th>Acciones</th></tr>";
+
+        for (let i = 0; i < filas.length; i++) {
+          html += "<tr>";
+          for (let j = 0; j < filas[i].values.length; j++) {
+            html += "<td>" + filas[i].values[j] + "</td>";
+          }
+          html +=
+            "<td>" +
+            "<button onclick='editar(" + i + ")'>Editar</button> " +
+            "<button onclick='eliminar(" + filas[i].row + ")'>Eliminar</button>" +
+            "</td></tr>";
+        }
+
+        document.getElementById("tabla").innerHTML = html;
+      }
+
+      // 3. Enviar datos al Apps Script
+      function enviar(datos) {
+        datos.token = TOKEN;
+        return fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(datos),
+        }).then((res) => res.json());
+      }
+
+      // 4. Agregar
+      function agregar() {
+        const valores = [];
+        for (let i = 0; i < encabezados.length; i++) {
+          const dato = prompt("Ingresa " + encabezados[i] + ":");
+          if (dato === null) return;
+          valores.push(dato);
+        }
+        enviar({ action: "create", values: valores }).then(cargar);
+      }
+
+      // 5. Editar
+      function editar(posicion) {
+        const fila = filas[posicion];
+        const valores = [];
+        for (let i = 0; i < encabezados.length; i++) {
+          const dato = prompt("Editar " + encabezados[i] + ":", fila.values[i]);
+          if (dato === null) return;
+          valores.push(dato);
+        }
+        enviar({ action: "update", row: fila.row, values: valores }).then(cargar);
+      }
+
+      // 6. Eliminar
+      function eliminar(numeroFila) {
+        if (confirm("¿Seguro que quieres eliminar esta fila?")) {
+          enviar({ action: "delete", row: numeroFila }).then(cargar);
+        }
+      }
+
+      cargar();
+    </script>
+  </body>
+</html>

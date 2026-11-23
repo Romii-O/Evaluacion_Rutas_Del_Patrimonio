@@ -1,109 +1,98 @@
-$(document).ready(function() {
-    $("#nombre").blur(function() {
-        var nombre = $.trim($(this).val());
-        if (nombre === "") {
-            $("#nombreError").text("Por favor, ingresa tu nombre.");
-        } else {
-            $("#nombreError").text("");
-        }
-    });
+const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzCKLOq-TdW1zIm3YwGZujAqOgNTOZq9hrI3RpN6oprDM-luEEEE4bY6XYnzudQTWlq/exec";
+const TOKEN = "sergio";
+const mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    $("#apellido").blur(function() {
-        var apellido = $.trim($(this).val());
-        if (apellido === "") {
-            $("#apellidoError").text("Por favor, ingresa tu apellido.");
-        } else {
-            $("#apellidoError").text("");
-        }
-    });
+$(document).ready(function () {
 
-    $("#telefono").blur(function() {
-        var telefono = $.trim($(this).val());
-        var telefonoRegex = /^[0-9]{10}$/;
-        if (telefono === "") {
-            $("#telefonoError").text("Por favor, ingresa tu teléfono.");
-        } else if (!telefonoRegex.test(telefono)) {
-            $("#telefonoError").text("Por favor, ingresa un número de teléfono válido (10 dígitos).");
-        } else {
-            $("#telefonoError").text("");
-        }
-    });
+    function valor(selector) {
+        return ($(selector).val() || "").toString().trim();
+    }
 
-    $("#mail").blur(function() {
-        var mail = $.trim($(this).val());
-        var mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (mail === "") {
-            $("#emailError").text("Por favor, ingresa tu correo electrónico.");
-        } else if (!mailRegex.test(mail)) {
-            $("#emailError").text("Por favor, ingresa un correo electrónico válido.");
-        } else {
-            $("#emailError").text("");
-        }
-    });
+    function validar(campo, errorId, comprobar) {
+        const mensaje = comprobar(valor(campo));
+        $(errorId).text(mensaje);
+        return mensaje === "";
+    }
 
-    $("#fechaNacimiento").blur(function() {
-        var fecha = $.trim($(this).val());
-        if (fecha === "") {
-            $("#fechaError").text("Por favor, ingresa la fecha.");
-        } else {
-            $("#fechaError").text("");
-        }
-    });
+    const validaciones = {
+        nombre: () => validar("#nombre", "#nombreError", v =>
+            v === "" ? "Por favor, ingresa tu nombre." : ""),
 
-    $("#region").blur(function() {
-        var region = $.trim($(this).val());
-        if (region === "") {
-            $("#regionError").text("Por favor, seleccione su región.");
-        } else {
-            $("#regionError").text("");
-        }
-    });
+        apellido: () => validar("#apellido", "#apellidoError", v =>
+            v === "" ? "Por favor, ingresa tu apellido." : ""),
 
-    $("#educacion").blur(function() {
-        var educacion = $.trim($(this).val());
-        if (educacion === "") {
-            $("#educacionError").text("Por favor, seleccione su nivel educacional.");
-        } else {
-            $("#educacionError").text("");
-        }
-    });
+        mail: () => validar("#mail", "#emailError", v => {
+            if (v === "") return "Por favor, ingresa tu correo electrónico.";
+            if (!mailRegex.test(v)) return "Por favor, ingresa un correo electrónico válido.";
+            return "";
+        }),
+        telefono: () => validar("#telefono", "#telefonoError", v => {
+            if (v === "") return "Por favor, ingresa tu teléfono.";
+            const limpio = v.replace(/[\s\-()]/g, "");
+            if (!/^(\+?56)?9\d{8}$/.test(limpio)) return "Ingresa un teléfono válido (ej: +56 9 1234 5678 o 912345678).";
+            return "";
+        }),
 
-    $("#formulario").submit(function(event) {
-        var nombre = $.trim($("#nombre").val());
-        var mail = $.trim($("#mail").val());
-        var telefono = $.trim($("#telefono").val());
-        var apellido = $.trim($("#apellido").val());
-        var mailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        var fecha = $.trim($("#fechaNacimiento").val());
-        var region = $.trim($("#region").val());
-        var educacion = $.trim($("#educacion").val());
+        fecha: () => validar("input[type='date']", "#fechaError", v =>
+            v === "" ? "Por favor, ingresa la fecha." : ""),
 
-        if (nombre === "" || mail === "" || telefono === "" || apellido === "" || fecha === "" || region === "") {
-            if (nombre === "") {
-                $("#nombreError").text("Por favor, ingresa tu nombre.");
-            }
-            if (mail === "") {
-                $("#emailError").text("Por favor, ingresa tu correo electrónico.");
-            }
-            if (telefono === "") {
-                $("#telefonoError").text("Por favor, ingresa tu teléfono.");
-            }
-            if (apellido === "") {
-                $("#apellidoError").text("Por favor, ingresa tu apellido.");
-            }
-            if (fecha === "") {
-                $("#fechaError").text("Por favor, ingresa la fecha.");
-            }
-            if (region === "") {
-                $("#regionError").text("Por favor, seleccione su región.");
-            }
-            if (educacion === "") {
-                $("#educacionError").text("Por favor, seleccione su nivel educacional.");
-            }
-            event.preventDefault();
-        } else if (!mailRegex.test(mail)) {
-            $("#emailError").text("Por favor, ingresa un correo electrónico válido.");
-            event.preventDefault();
-        }
+        region: () => validar("#autoSizingSelect", "#regionError", v =>
+            $("#autoSizingSelect").prop("selectedIndex") === 0 ? "Por favor, seleccione su región." : ""),
+
+        educacion: () => validar("input[name='Tecnico']:checked", "#educacionError", v =>
+            $("input[name='Tecnico']:checked").length === 0 ? "Por favor, seleccione su nivel educacional." : "")
+    };
+
+    $("#nombre").on("blur", validaciones.nombre);
+    $("#apellido").on("blur", validaciones.apellido);
+    $("#mail").on("blur", validaciones.mail);
+    $("#telefono").on("blur", validaciones.telefono);
+    $("input[type='date']").on("blur change", validaciones.fecha);
+    $("#autoSizingSelect").on("blur change", validaciones.region);
+    $("input[name='Tecnico']").on("change", validaciones.educacion);
+
+    function enviarASheets() {
+        const radio = $("input[name='Tecnico']:checked");
+        const nivel = $("label[for='" + radio.attr("id") + "']").text();
+
+        const datos = new URLSearchParams({
+            token: TOKEN,
+            nombre: valor("#nombre"),
+            apellido: valor("#apellido"),
+            correo: valor("#mail"),
+            telefono: valor("#telefono"),
+            fechaNacimiento: valor("input[type='date']"),
+            region: $("#autoSizingSelect option:selected").text(),
+            nivelEducacional: nivel
+        });
+
+        return fetch(URL_SCRIPT, {
+            method: "POST",
+            body: datos
+        }).then(res => res.text());
+    }
+
+    $("#formulario").on("submit", function (event) {
+        event.preventDefault();
+
+        const resultados = Object.values(validaciones).map(fn => fn());
+        if (resultados.includes(false)) return;
+
+        const boton = $(this).find("button[type=submit]").prop("disabled", true);
+
+        enviarASheets()
+            .then((respuesta) => {
+                if (respuesta.toLowerCase().includes("error")) {
+                    alert("El script respondió: " + respuesta);
+                    return;
+                }
+                alert("¡Datos enviados correctamente!");
+                this.reset();
+            })
+            .catch((error) => {
+                console.log(error);
+                alert("No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.");
+            })
+            .finally(() => boton.prop("disabled", false));
     });
 });
